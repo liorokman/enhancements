@@ -17,8 +17,6 @@ status: proposed
 
 ## Table of Contents
 
-Ensure the TOC is wrapped with <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code> tags, and then generate with `hack/update-toc.sh`.
-
 <!-- toc -->
 - [Release Signoff Checklist](#release-signoff-checklist)
 - [Summary](#summary)
@@ -58,7 +56,9 @@ Check these off as they are completed for the Release Team to track. These check
 
 ## Summary
 
-The `Burstable` QoS level is used for any Pod that defines resource limits for at least one container, and doesn't define the same value for both the `request` and `limit` sections. In these Pods, a container which doesn't define any limit for a resource will effectively not be constrained in any way for that resource. Defining a limit for all of the containers in the pod has the implication that it is not possible to define a pod where the resources are controlled on the pod level. This KEP proposes a way to define constraints on the Pod level, to allow for a smoother resource allocation strategy for `Burstable` pods.
+The `Burstable` QoS level is used for any Pod that defines resource limits for at least one container, and doesn't define the same value for both the `request` and `limit` sections. In these Pods, a container which doesn't define any limit for a resource will effectively not be constrained in any way for that resource. Defining a limit for all of the containers in the pod has the implication that it is not possible to define a pod where the resources are controlled on the pod level. 
+
+This KEP proposes a way to define constraints on the Pod level, to allow for a smoother resource allocation strategy for `Burstable` pods.
 
 
 ## Motivation
@@ -82,19 +82,19 @@ For example, consider the following Pod with the following structure:
 
 In some cases deploying a single container with all the tasks is not optimal and not always possible. Kubernetes is not aware of these tasks, and doesn't monitor them for failure, and is not able to manage the resources (cgroups) for each of them. By separating the different tasks to their own containers, the application is able to leverage Kubernetes to monitor the tasks. The current `Burstable` QoS implementation requires the pod to either not limit each individual container at all, or micro-manage the resources allocated to each and every container.
 
-This proposal suggests a middle ground, and suggests to make it possible to describe to Kubernetes how to limit the resource consumption of multiple containers in the pod at once, on the Pod level, instead of trying to micro-manage the resource limits on the container level. For workloads where the work performed is burstable, this proposal would make it easier to allow the low-level mechanisms available in the underlying operating-system to manage the resources required for the task.
+This proposal suggests a middle ground, and suggests a way to make it possible to describe to Kubernetes how to limit the resource consumption of multiple containers in the pod at once, on the Pod level, instead of trying to micro-manage the resource limits on the container level. For workloads where the work performed is burstable, this proposal would make it easier to allow the low-level mechanisms available in the underlying operating-system to manage the resources required for the task.
 
 ### Goals
 
 This proposal aims to:
 
-*. Allow a `Burstable` pod to define that memory and CPU resource limits should be set on the level of the Pod.
-*. Prevent the developer from having to micro-manage the memory and CPU resource assignments for different containers in the same pod.
-*. Keep the current `Burstable` behavior as the default.
+*  Allow a `Burstable` pod to define that memory and CPU resource limits should be set on the level of the Pod.
+*  Prevent the developer from having to micro-manage the memory and CPU resource assignments for different containers in the same pod.
+*  Keep the current `Burstable` behavior as the default.
 
 ### Non-Goals
 
-*. Providing a general-purpose interface to the full range of possible resource management provided by the Linux cgroup hierarchy.
+*  Providing a general-purpose interface to the full range of possible resource management provided by the Linux cgroup hierarchy.
 
 ## Proposal
 
@@ -109,7 +109,7 @@ The Pod QoS enhancement already implemented in Kubernetes manages resources as a
       |
       +-- container1 (first container)
       |
-      =
+   = ... =
       |
       +-- containerN (N-th container)
 </pre>
@@ -175,7 +175,7 @@ The cgroup hierarchy for each of these resources (memory and cpu) would be this:
       +-- container3 (nginx container, memory: 256M limit, CPU: 1 core)
 </pre>
 
-By setting the `ShareBurstableLimits` attribute on the Pod spec to `true, the following cgroup hierarchy would be configured:
+By setting the `ShareBurstableLimits` attribute on the Pod spec to `true`, the following cgroup hierarchy would be configured:
 
 <pre>
   QoS CGroup (one of guaranteed, burstable, or besteffort)
@@ -195,7 +195,7 @@ This has the following effect:
 1. No change will be noticed for the nginx container
 1. The shell and proxy containers will be limited to the amount of resources specified on the Pod cgroup level - no more than 256M memory and 1 CPU core.
 1. The pause container will not be affected since it doesn't use any resources anyways.
-1. The total resource usage for this Pod will be more predictable as far as the Kubelet is concerned, since the shell container can't consume an umlimited amount of resources.
+1. The total resource usage for this Pod will be more predictable as far as the Kubelet is concerned, since the shell container can't consume an unlimited amount of resources.
 
 Effectively, if the shell isn't being used, all of the currently unused resources which are allowed to be consumed would be usable also in the proxy container.
 
@@ -212,7 +212,7 @@ spec:
   shareBurstableLimits: true
   containers:
   - image: shell
-    name: debian:buster
+    name: debian:stable
   - image: proxy
     name: envoy:latest
     resources:
