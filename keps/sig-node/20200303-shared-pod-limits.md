@@ -90,7 +90,7 @@ For example, consider the following Pod with the following structure:
    +-- container3 (log handler)
    |
    +-- container4 (mesh sidecar)
-<pre>
+</pre>
 
 In some cases deploying a single container with all the tasks is not optimal and not always possible. Kubernetes is not aware of these tasks, and doesn't monitor them for failure, and is not able to manage the resources (cgroups) for each of them. By separating the different tasks to their own containers, the application is able to leverage Kubernetes to monitor the tasks. The current `Burstable` QoS implementation requires the pod to either not limit each individual container at all, or micro-manage the resources allocated to each and every container.
 
@@ -124,7 +124,7 @@ The Pod QoS enhancement already implemented in Kubernetes manages resources as a
       =
       |
       +-- containerN (N-th container)
-<pre>
+</pre>
 
 Each container level cgroup is limited based on the information provided in the `Container` specification. Currently, if the pod belongs to 
 the `Burstable` QoS level, and **all** of the containers specify limits for each resource, then these limits are summed, and that limit is
@@ -185,7 +185,7 @@ The cgroup hierarchy for each of these resources (memory and cpu) would be this:
       +-- container2 (proxy container, memory: unlimited, CPU: unlimited)
       |
       +-- container3 (nginx container, memory: 256M limit, CPU: 1 core)
-<pre>
+</pre>
 
 By setting the `ShareBurstableLimits` attribute on the Pod spec to `true, the following cgroup hierarchy would be configured:
 
@@ -201,7 +201,7 @@ By setting the `ShareBurstableLimits` attribute on the Pod spec to `true, the fo
       +-- container2 (proxy container, memory: unlimited, CPU: unlimited)
       |
       +-- container3 (nginx container, memory: 256M limit, CPU: 1 core)
-<pre>
+</pre>
 
 This has the following effect:
 1. No change will be noticed for the nginx container
@@ -260,7 +260,7 @@ In this pod, the cgroups would be set up in the following way:
       +-- container2 (proxy container, memory: 256M limit, CPU: 1 core)
       |
       +-- container3 (nginx container, memory: 256M limit, CPU: 1 core)
-<pre>
+</pre>
 
 Both the proxy and the nginx container are constrained, and the entire pod is still limited to the sum of the specified limits of all the containers in the pod.
 
